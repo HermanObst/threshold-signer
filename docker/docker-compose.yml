@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  node1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mpc-node1
+    command:
+      - --config=/config/node1.yaml
+      - --secret-key=/config/node1.key
+      - --aes-key=${MPC_AES_KEY:-00000000000000000000000000000000}
+    volumes:
+      - ../config:/config:ro
+      - node1-data:/data
+    ports:
+      - "3001:3001"
+      - "10001:10001"
+    networks:
+      - mpc-net
+    environment:
+      - RUST_LOG=info
+
+  node2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mpc-node2
+    command:
+      - --config=/config/node2.yaml
+      - --secret-key=/config/node2.key
+      - --aes-key=${MPC_AES_KEY:-00000000000000000000000000000000}
+    volumes:
+      - ../config:/config:ro
+      - node2-data:/data
+    ports:
+      - "3002:3002"
+      - "10002:10002"
+    networks:
+      - mpc-net
+    environment:
+      - RUST_LOG=info
+
+  node3:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mpc-node3
+    command:
+      - --config=/config/node3.yaml
+      - --secret-key=/config/node3.key
+      - --aes-key=${MPC_AES_KEY:-00000000000000000000000000000000}
+    volumes:
+      - ../config:/config:ro
+      - node3-data:/data
+    ports:
+      - "3003:3003"
+      - "10003:10003"
+    networks:
+      - mpc-net
+    environment:
+      - RUST_LOG=info
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:
+
+networks:
+  mpc-net:
+    driver: bridge

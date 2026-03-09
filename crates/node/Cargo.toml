@@ -1,0 +1,43 @@
+[package]
+name = "threshold-signer-node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+threshold-signatures = { workspace = true, features = ["test-utils"] }
+mpc-tls.workspace = true
+aes-gcm.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+axum.workspace = true
+borsh.workspace = true
+bytes.workspace = true
+clap.workspace = true
+derive_more.workspace = true
+ed25519-dalek.workspace = true
+flume.workspace = true
+futures.workspace = true
+hex.workspace = true
+itertools.workspace = true
+k256 = { workspace = true, features = ["sha256", "ecdsa", "serde"] }
+lru.workspace = true
+rand.workspace = true
+rand_core.workspace = true
+reqwest.workspace = true
+rmp-serde.workspace = true
+rocksdb.workspace = true
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-rustls.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true

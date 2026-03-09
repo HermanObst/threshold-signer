@@ -1,0 +1,19 @@
+[package]
+name = "mpc-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clap.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+hex.workspace = true
+tokio.workspace = true
+anyhow.workspace = true
+k256 = { workspace = true, features = ["ecdsa", "serde", "sha256"] }
+ed25519-dalek = { workspace = true }
+
+[lints]
+workspace = true
