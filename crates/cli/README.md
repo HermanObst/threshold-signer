@@ -119,7 +119,7 @@ Derive the Ed25519 public key from a hex-encoded 32-byte secret key:
 mpc-cli derive-pubkey --secret-key <hex>
 ```
 
-This is used internally by `scripts/generate-keys.sh` to produce public keys that are compatible with `ed25519-dalek`.
+This is used internally by `scripts/generate-p2p-keys.sh` to produce public keys that are compatible with `ed25519-dalek`.
 
 ## Verification Details
 

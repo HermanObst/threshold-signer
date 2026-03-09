@@ -52,7 +52,7 @@ fail() {
 echo "=== MPC E2E Test: $N nodes, threshold $T ==="
 echo ""
 
-# Step 1: Build binaries (must happen before generate-keys.sh which uses mpc-cli)
+# Step 1: Build binaries (must happen before generate-p2p-keys.sh which uses mpc-cli)
 echo "--- Building binaries ---"
 cargo build --release -p threshold-signer-node -p mpc-cli --manifest-path "$ROOT_DIR/Cargo.toml"
 
@@ -62,7 +62,7 @@ CLI="$ROOT_DIR/target/release/mpc-cli"
 # Step 2: Generate configs
 echo ""
 echo "--- Generating configs ---"
-bash "$SCRIPT_DIR/generate-keys.sh" "$N" "$T" --local
+bash "$SCRIPT_DIR/generate-p2p-keys.sh" "$N" "$T" --local
 
 AES_KEY=$(cat "$CONFIG_DIR/aes.key")
 

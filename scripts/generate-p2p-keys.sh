@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Generate Ed25519 P2P keys and AES keys for N MPC nodes.
-# Usage: ./generate-keys.sh [N] [T] [--local]
+# Usage: ./generate-p2p-keys.sh [N] [T] [--local]
 #   N: number of nodes (default: 3)
 #   T: threshold (default: 2)
 #   --local: use 127.0.0.1 instead of Docker hostnames, ./data/nodeN instead of /data/nodeN
