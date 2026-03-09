@@ -1,5 +1,5 @@
 # Multi-stage build for MPC standalone node
-FROM rust:1.82-bookworm AS builder
+FROM rust:1.88-bookworm AS builder
 
 # Install dependencies for RocksDB and OpenSSL
 RUN apt-get update && apt-get install -y \
