@@ -40,7 +40,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# Step 1: Build binaries (must happen before generate-p2p-keys.sh which uses mpc-cli)
+# Step 1: Build binaries (must happen before setup-nodes.sh which uses mpc-cli)
 if $BUILD; then
     echo "Building binaries..."
     cargo build --release -p threshold-signer-node -p mpc-cli --manifest-path "$ROOT_DIR/Cargo.toml"
@@ -57,7 +57,7 @@ fi
 # Step 2: Generate configs with --local
 echo ""
 echo "Generating configs for $N nodes (local mode)..."
-bash "$SCRIPT_DIR/generate-p2p-keys.sh" "$N" "$T" --local
+bash "$SCRIPT_DIR/setup-nodes.sh" "$N" "$T" --local
 
 # Read AES key
 AES_KEY=$(cat "$CONFIG_DIR/aes.key")

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Generate Ed25519 P2P keys and AES keys for N MPC nodes.
-# Usage: ./generate-p2p-keys.sh [N] [T] [--local]
+# Generate P2P keys, AES encryption key, and YAML config files for N MPC nodes.
+# Requires mpc-cli to be built first (cargo build -p mpc-cli).
+# Usage: ./setup-nodes.sh [N] [T] [--local]
 #   N: number of nodes (default: 3)
 #   T: threshold (default: 2)
 #   --local: use 127.0.0.1 instead of Docker hostnames, ./data/nodeN instead of /data/nodeN
