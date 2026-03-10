@@ -578,10 +578,7 @@ pub mod testing {
     /// Creates in-memory connected mesh transport for n participants.
     pub fn create_in_memory_mesh(
         participant_ids: &[ParticipantId],
-    ) -> Vec<(
-        Arc<dyn MeshNetworkTransportSender>,
-        Box<dyn MeshNetworkTransportReceiver>,
-    )> {
+    ) -> Vec<(Arc<dyn MeshNetworkTransportSender>, InMemoryReceiver)> {
         let mut incoming_senders: HashMap<ParticipantId, mpsc::UnboundedSender<MpcPeerMessage>> =
             HashMap::new();
         let mut incoming_receivers: HashMap<
@@ -611,9 +608,9 @@ pub mod testing {
                     senders,
                 }) as Arc<dyn MeshNetworkTransportSender>;
 
-                let receiver = Box::new(InMemoryReceiver {
+                let receiver = InMemoryReceiver {
                     receiver: incoming_receivers.remove(&my_id).unwrap(),
-                }) as Box<dyn MeshNetworkTransportReceiver>;
+                };
 
                 (transport, receiver)
             })
@@ -641,8 +638,8 @@ pub mod testing {
             let client_fn = client_fn.clone();
             let handle = tokio::spawn(async move {
                 let (incoming_tx, incoming_rx) = mpsc::unbounded_channel();
-                let client =
-                    run_network_client(transport_sender, *transport_receiver, incoming_tx).await?;
+                let (client, _background) =
+                    run_network_client(transport_sender, transport_receiver, incoming_tx).await?;
                 client_fn(client, incoming_rx).await
             });
             handles.push(handle);

@@ -2,7 +2,7 @@
 
 Standalone threshold MPC node for distributed ECDSA (Secp256k1) and EdDSA (Ed25519) signatures. Nodes form a P2P mesh, run distributed key generation, and produce threshold signatures without any single party holding the complete key.
 
-This project is extracted from the [NEAR MPC](https://github.com/near/mpc) repository, with all NEAR blockchain dependencies removed. The core cryptographic protocols (`threshold-signatures` crate) and TLS transport (`tls` crate) are taken directly from the upstream project. The `node` and `cli` crates are rewritten to run as a standalone P2P network driven by HTTP API calls instead of an on-chain contract.
+This project is extracted from the [NEAR MPC](https://github.com/near/mpc) repository, with all NEAR blockchain dependencies removed. The core cryptographic protocols (`threshold-signatures` crate) and TLS transport (`mpc-tls` crate) are imported as git dependencies from the upstream repo, pinned to a specific commit. The `node` and `cli` crates are rewritten to run as a standalone P2P network driven by HTTP API calls instead of an on-chain contract.
 
 Built on [FROST](https://eprint.iacr.org/2020/852) for EdDSA and an [OT-based protocol](https://github.com/cronokirby/cait-sith) (derived from Cait-Sith) for ECDSA.
 
@@ -23,14 +23,14 @@ Built on [FROST](https://eprint.iacr.org/2020/852) for EdDSA and an [OT-based pr
           +-----------------+       +-----------------+
 ```
 
-Four workspace crates:
+Two local workspace crates, plus two upstream git dependencies:
 
-| Crate | Type | Purpose |
-|-------|------|---------|
-| `threshold-signatures` | Library | Pure cryptographic protocols: ECDSA, EdDSA (FROST), CKD (BLS12-381). No networking or I/O. |
-| `node` | Binary | MPC node: P2P mesh, orchestrator, HTTP API. Wires crypto protocols to network transport. |
-| `tls` | Library | Mutual TLS (mTLS) using Ed25519 identity keys for P2P authentication. |
-| `cli` | Binary | Command-line client for interacting with running MPC nodes. |
+| Crate | Type | Source | Purpose |
+|-------|------|--------|---------|
+| `node` | Binary | Local | MPC node: P2P mesh, orchestrator, HTTP API. Wires crypto protocols to network transport. |
+| `cli` | Binary | Local | Command-line client for interacting with running MPC nodes. |
+| `threshold-signatures` | Library | [near/mpc](https://github.com/near/mpc) | Pure cryptographic protocols: ECDSA, EdDSA (FROST), CKD (BLS12-381). No networking or I/O. |
+| `mpc-tls` | Library | [near/mpc](https://github.com/near/mpc) | Mutual TLS (mTLS) using Ed25519 identity keys for P2P authentication. |
 
 ## Quick Start (Docker)
 
@@ -40,7 +40,7 @@ Four workspace crates:
    cargo build -p mpc-cli
    ```
 
-2. **Set up nodes** for a 3-node network with threshold 2:
+2. **Set up nodes** for a 3-node network with threshold 2 (docker-compose is harcoded to that set up. Directly run the binary to use different ones):
 
    ```bash
    ./scripts/setup-nodes.sh 3 2
@@ -219,9 +219,7 @@ Environment variables:
 ```
 threshold-signer/
   crates/
-    threshold-signatures/  -- Pure crypto: ECDSA, EdDSA (FROST), CKD, DKG
     node/                  -- MPC node binary: P2P mesh, orchestrator, HTTP API
-    tls/                   -- Mutual TLS with Ed25519 identity keys
     cli/                   -- CLI client for interacting with nodes
   scripts/
     setup-nodes.sh         -- Generate P2P keys, AES key, and YAML configs (requires mpc-cli)
@@ -233,3 +231,5 @@ threshold-signer/
   config/                  -- Generated node configs (gitignored)
   data/                    -- Runtime data directories (gitignored)
 ```
+
+The `threshold-signatures` and `mpc-tls` crates are imported from upstream [near/mpc](https://github.com/near/mpc) as git dependencies.
