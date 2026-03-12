@@ -214,6 +214,34 @@ Environment variables:
 - `MPC_AES_KEY` -- hex-encoded AES-128 key for encrypting local RocksDB storage
 - `RUST_LOG` -- tracing filter (default: `info`)
 
+## Participant Model and `setup-nodes.sh`
+
+Threshold MPC requires all nodes to know each other before starting. Every node needs the full list of participants — their IDs, addresses, ports, and Ed25519 public keys — because:
+
+1. **TLS authentication** — nodes use mutual TLS with Ed25519 identity keys embedded in certificates. After the TLS handshake, each side extracts the peer's public key from its certificate and looks it up in the participant list. Unknown keys are rejected.
+2. **Protocol correctness** — distributed key generation (DKG) binds key shares to a specific set of participants and threshold. You can't add or remove participants without resharing.
+
+### How this differs from upstream NEAR MPC
+
+In the upstream [NEAR MPC](https://github.com/near/mpc) repository, the participant list is stored on-chain in a NEAR smart contract. The contract's `init()` function receives a `ThresholdParameters` object containing all participants' account IDs, addresses, ports, and public keys. Each node runs an indexer that polls the contract every second to read the participant list. Changing membership requires threshold-many participants to vote via `vote_new_parameters()`, which triggers a full key resharing protocol.
+
+This standalone version replaces the on-chain contract with static YAML configuration files. The `setup-nodes.sh` script takes the role of the contract's `init()` — it generates all Ed25519 keypairs, derives public keys, and writes the complete participant list into every node's config file:
+
+```
+NEAR MPC (upstream)                    Standalone (this repo)
+───────────────────                    ──────────────────────
+Contract init() with                   setup-nodes.sh generates
+ThresholdParameters          →         config/node{1..N}.yaml
+
+Indexer polls contract                 Node reads YAML at startup
+every 1 second for state
+
+vote_new_parameters() +                Regenerate configs +
+resharing protocol                     restart all nodes
+```
+
+The trust model is identical: a closed, pre-configured cluster where the participant set is fixed at deployment time. There is no peer discovery, gossip protocol, or dynamic join mechanism. To add a node, you must regenerate all configs and restart the entire cluster.
+
 ## Project Structure
 
 ```
