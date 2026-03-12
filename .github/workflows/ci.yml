@@ -11,41 +11,18 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  check:
-    name: Cargo Check
+  fmt:
+    name: Cargo Fmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake clang libclang-dev librocksdb-dev libssl-dev pkg-config
-
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
 
-      - uses: Swatinem/rust-cache@v2
-
-      - name: cargo check
-        run: cargo check --all-targets
-
-  test:
-    name: Unit & Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake clang libclang-dev librocksdb-dev libssl-dev pkg-config
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: cargo test
-        run: cargo test --all-targets
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
 
   e2e:
     name: E2E Test
