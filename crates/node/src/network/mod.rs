@@ -18,11 +18,7 @@ pub trait MeshNetworkTransportSender: Send + Sync + 'static {
     fn my_participant_id(&self) -> ParticipantId;
     fn all_participant_ids(&self) -> Vec<ParticipantId>;
     fn is_connected(&self, participant_id: ParticipantId) -> bool;
-    fn send(
-        &self,
-        recipient_id: ParticipantId,
-        message: MpcMessage,
-    ) -> anyhow::Result<()>;
+    fn send(&self, recipient_id: ParticipantId, message: MpcMessage) -> anyhow::Result<()>;
     async fn wait_for_ready(
         &self,
         threshold: usize,
@@ -280,7 +276,11 @@ impl NetworkTaskChannel {
         transport_sender: Arc<dyn MeshNetworkTransportSender>,
         receiver: mpsc::UnboundedReceiver<MpcPeerMessage>,
     ) -> Self {
-        let leader = start_message.participants.first().copied().unwrap_or(my_participant_id);
+        let leader = start_message
+            .participants
+            .first()
+            .copied()
+            .unwrap_or(my_participant_id);
         Self {
             channel_id,
             task_id: start_message.task_id,
@@ -392,11 +392,7 @@ impl NetworkTaskChannelSender {
         self.leader
     }
 
-    pub fn send(
-        &self,
-        recipient: ParticipantId,
-        messages: Vec<Vec<u8>>,
-    ) -> anyhow::Result<()> {
+    pub fn send(&self, recipient: ParticipantId, messages: Vec<Vec<u8>>) -> anyhow::Result<()> {
         self.send_raw(
             recipient,
             MpcMessage {
@@ -406,11 +402,7 @@ impl NetworkTaskChannelSender {
         )
     }
 
-    pub fn send_raw(
-        &self,
-        recipient: ParticipantId,
-        message: MpcMessage,
-    ) -> anyhow::Result<()> {
+    pub fn send_raw(&self, recipient: ParticipantId, message: MpcMessage) -> anyhow::Result<()> {
         self.transport_sender.send(recipient, message)
     }
 
@@ -467,8 +459,7 @@ pub async fn run_network_client(
                     let mut channels_guard = channels.lock().unwrap();
                     if let Some(sender) = channels_guard.senders.get(&channel_id) {
                         let _ = sender.send(peer_msg);
-                    } else if let MpcMessageKind::Start(ref start_message) = peer_msg.message.kind
-                    {
+                    } else if let MpcMessageKind::Start(ref start_message) = peer_msg.message.kind {
                         // Create a new channel from the start message
                         let (sender, receiver) = mpsc::unbounded_channel();
                         channels_guard.senders.insert(channel_id, sender);
@@ -484,12 +475,12 @@ pub async fn run_network_client(
                         let _ = incoming_channel_sender.send(channel);
                     } else {
                         // Buffer the message waiting for Start
-                        match channels_guard
-                            .channels_waiting_for_start
-                            .get_or_insert_mut(channel_id, || IncompleteNetworkTaskChannel {
+                        match channels_guard.channels_waiting_for_start.get_or_insert_mut(
+                            channel_id,
+                            || IncompleteNetworkTaskChannel {
                                 buffered_messages: Vec::new(),
-                            })
-                        {
+                            },
+                        ) {
                             incomplete => {
                                 incomplete.buffered_messages.push(peer_msg);
                             }
@@ -538,11 +529,7 @@ pub mod testing {
             self.senders.contains_key(&participant_id)
         }
 
-        fn send(
-            &self,
-            recipient_id: ParticipantId,
-            message: MpcMessage,
-        ) -> anyhow::Result<()> {
+        fn send(&self, recipient_id: ParticipantId, message: MpcMessage) -> anyhow::Result<()> {
             let sender = self
                 .senders
                 .get(&recipient_id)

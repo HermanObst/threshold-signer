@@ -9,7 +9,7 @@ mod protocol;
 mod providers;
 mod tracking;
 
-use crate::api::{AppState, create_router};
+use crate::api::{create_router, AppState};
 use crate::config::StandaloneConfigFile;
 use crate::network::run_network_client;
 use crate::orchestrator::Orchestrator;
@@ -61,10 +61,7 @@ async fn main() -> anyhow::Result<()> {
     let signing_key = SigningKey::from_bytes(&secret_key_bytes);
     let verifying_key = signing_key.verifying_key();
 
-    tracing::info!(
-        "P2P public key: {}",
-        hex::encode(verifying_key.as_bytes())
-    );
+    tracing::info!("P2P public key: {}", hex::encode(verifying_key.as_bytes()));
 
     // Build MPC config
     let mpc_config = config.to_mpc_config(&verifying_key)?;
@@ -75,26 +72,19 @@ async fn main() -> anyhow::Result<()> {
     // Start the main task
     let (future, _handle) = start_root_task("threshold-signer", async move {
         // Create TLS mesh network
-        let (transport_sender, transport_receiver) = new_tls_mesh_network(
-            &signing_key,
-            &config.participants,
-            my_id,
-            config.p2p_port,
-        )
-        .await
-        .expect("Failed to create TLS mesh network");
+        let (transport_sender, transport_receiver) =
+            new_tls_mesh_network(&signing_key, &config.participants, my_id, config.p2p_port)
+                .await
+                .expect("Failed to create TLS mesh network");
 
         tracing::info!("TLS mesh network started on port {}", config.p2p_port);
 
         // Start network client
         let (incoming_channel_tx, mut incoming_channel_rx) = mpsc::unbounded_channel();
-        let (client, _network_receiver_task) = run_network_client(
-            transport_sender,
-            transport_receiver,
-            incoming_channel_tx,
-        )
-        .await
-        .expect("Failed to start network client");
+        let (client, _network_receiver_task) =
+            run_network_client(transport_sender, transport_receiver, incoming_channel_tx)
+                .await
+                .expect("Failed to start network client");
 
         // Wait for peers to connect
         tracing::info!("Waiting for peers to connect...");
