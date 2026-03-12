@@ -4,8 +4,8 @@ use crate::protocol::run_protocol;
 use anyhow::Context;
 use k256::elliptic_curve::PrimeField;
 use k256::Scalar;
-use threshold_signatures::ecdsa::KeygenOutput;
 use threshold_signatures::ecdsa::ot_based_ecdsa::{PresignOutput, RerandomizedPresignOutput};
+use threshold_signatures::ecdsa::KeygenOutput;
 use threshold_signatures::ecdsa::{RerandomizationArguments, SignatureOption};
 use threshold_signatures::frost_secp256k1::VerifyingKey;
 use threshold_signatures::participants::Participant;
@@ -65,10 +65,7 @@ impl MpcLeaderCentricComputation<(SignatureOption, VerifyingKey)> for SignComput
             msg_hash,
         )?;
         let signature = run_protocol("sign ecdsa", channel, protocol).await?;
-        Ok((
-            signature,
-            VerifyingKey::new(public_key.into()),
-        ))
+        Ok((signature, VerifyingKey::new(public_key.into())))
     }
 
     fn leader_waits_for_success(&self) -> bool {

@@ -126,7 +126,11 @@ fn verify_ecdsa(
 
     // s is hex of raw 32-byte scalar
     let s_bytes = hex::decode(s_hex).context("Invalid hex for signature s")?;
-    anyhow::ensure!(s_bytes.len() == 32, "s must be 32 bytes, got {}", s_bytes.len());
+    anyhow::ensure!(
+        s_bytes.len() == 32,
+        "s must be 32 bytes, got {}",
+        s_bytes.len()
+    );
 
     // Construct standard ECDSA signature from (r, s) as two 32-byte big-endian values
     let mut sig_bytes = [0u8; 64];
@@ -137,8 +141,8 @@ fn verify_ecdsa(
 
     // Decode public key (SEC1 compressed or uncompressed)
     let pk_bytes = hex::decode(public_key_hex).context("Invalid hex for public key")?;
-    let vk = VerifyingKey::from_sec1_bytes(&pk_bytes)
-        .context("Failed to parse public key as SEC1")?;
+    let vk =
+        VerifyingKey::from_sec1_bytes(&pk_bytes).context("Failed to parse public key as SEC1")?;
 
     // For ECDSA, payload is already a 32-byte hash
     let payload_bytes = hex::decode(payload_hex).context("Invalid hex for payload")?;
@@ -245,10 +249,7 @@ async fn main() -> anyhow::Result<()> {
 
             let resp = client
                 .post(format!("{}/sign", cli.node))
-                .json(&SignRequest {
-                    scheme,
-                    payload,
-                })
+                .json(&SignRequest { scheme, payload })
                 .send()
                 .await
                 .context("Failed to connect to node")?;

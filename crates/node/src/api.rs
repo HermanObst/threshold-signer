@@ -134,11 +134,7 @@ async fn handle_generate(
 ) -> Result<Json<GenerateResponse>, (StatusCode, Json<ErrorResponse>)> {
     let result = match req.asset.as_str() {
         "triples" => state.orchestrator.generate_triples().await,
-        "presignatures" => state
-            .orchestrator
-            .generate_presignature()
-            .await
-            .map(|_| 1),
+        "presignatures" => state.orchestrator.generate_presignature().await.map(|_| 1),
         _ => {
             return Err((
                 StatusCode::BAD_REQUEST,
@@ -160,9 +156,7 @@ async fn handle_generate(
     }
 }
 
-async fn handle_status(
-    State(state): State<AppState>,
-) -> Json<StatusResponse> {
+async fn handle_status(State(state): State<AppState>) -> Json<StatusResponse> {
     let orchestrator = &state.orchestrator;
     let peers: Vec<String> = orchestrator
         .client

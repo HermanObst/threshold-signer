@@ -5,8 +5,8 @@ use crate::providers::ecdsa::key_generation::KeyGenerationComputation as EcdsaKe
 use crate::providers::ecdsa::presign::PresignComputation;
 use crate::providers::ecdsa::sign::SignComputation as EcdsaSignComputation;
 use crate::providers::ecdsa::triple::{
-    ManyTripleGenerationComputation, PairedTriple, SUPPORTED_TRIPLE_GENERATION_BATCH_SIZE,
-    participants_from_triples,
+    participants_from_triples, ManyTripleGenerationComputation, PairedTriple,
+    SUPPORTED_TRIPLE_GENERATION_BATCH_SIZE,
 };
 use crate::providers::eddsa::key_generation::KeyGenerationComputation as EddsaKeygenComputation;
 use crate::providers::eddsa::sign::SignComputation as EddsaSignComputation;
@@ -14,8 +14,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use threshold_signatures::ecdsa::KeygenOutput as EcdsaKeygenOutput;
 use threshold_signatures::ecdsa::ot_based_ecdsa::PresignOutput;
+use threshold_signatures::ecdsa::KeygenOutput as EcdsaKeygenOutput;
 use threshold_signatures::frost::eddsa::KeygenOutput as EddsaKeygenOutput;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -114,7 +114,12 @@ impl Orchestrator {
         .perform_leader_centric_computation(channel, Duration::from_secs(120))
         .await?;
 
-        let public_key = hex::encode(keygen_output.public_key.serialize().map_err(|e| anyhow::anyhow!("{}", e))?);
+        let public_key = hex::encode(
+            keygen_output
+                .public_key
+                .serialize()
+                .map_err(|e| anyhow::anyhow!("{}", e))?,
+        );
         {
             let mut inner = self.state.lock().unwrap();
             inner.ecdsa_keyshare = Some(keygen_output);
@@ -139,7 +144,12 @@ impl Orchestrator {
         .perform_leader_centric_computation(channel, Duration::from_secs(120))
         .await?;
 
-        let public_key = hex::encode(keygen_output.public_key.serialize().map_err(|e| anyhow::anyhow!("{}", e))?);
+        let public_key = hex::encode(
+            keygen_output
+                .public_key
+                .serialize()
+                .map_err(|e| anyhow::anyhow!("{}", e))?,
+        );
         {
             let mut inner = self.state.lock().unwrap();
             inner.eddsa_keyshare = Some(keygen_output);
@@ -163,12 +173,11 @@ impl Orchestrator {
         };
         let channel = self.client.new_channel_for_task(task_id, participants)?;
 
-        let triples =
-            ManyTripleGenerationComputation::<SUPPORTED_TRIPLE_GENERATION_BATCH_SIZE> {
-                threshold: self.threshold,
-            }
-            .perform_leader_centric_computation(channel, Duration::from_secs(120))
-            .await?;
+        let triples = ManyTripleGenerationComputation::<SUPPORTED_TRIPLE_GENERATION_BATCH_SIZE> {
+            threshold: self.threshold,
+        }
+        .perform_leader_centric_computation(channel, Duration::from_secs(120))
+        .await?;
 
         let count = triples.len();
         {
@@ -258,12 +267,17 @@ impl Orchestrator {
         .perform_leader_centric_computation(channel, Duration::from_secs(60))
         .await?;
 
-        let signature = signature_opt.ok_or_else(|| anyhow::anyhow!("No signature returned (not leader?)"))?;
+        let signature =
+            signature_opt.ok_or_else(|| anyhow::anyhow!("No signature returned (not leader?)"))?;
 
         Ok(EcdsaSignResult {
             r: hex::encode(serde_json::to_vec(&signature.big_r).unwrap_or_default()),
             s: hex::encode(signature.s.to_bytes()),
-            public_key: hex::encode(public_key.serialize().map_err(|e| anyhow::anyhow!("{}", e))?),
+            public_key: hex::encode(
+                public_key
+                    .serialize()
+                    .map_err(|e| anyhow::anyhow!("{}", e))?,
+            ),
         })
     }
 
@@ -282,7 +296,9 @@ impl Orchestrator {
             .client
             .select_random_active_participants_including_me(self.threshold, &all_participants)?;
 
-        let task_id = MpcTaskId::EddsaSignature { payload: message.clone() };
+        let task_id = MpcTaskId::EddsaSignature {
+            payload: message.clone(),
+        };
         let channel = self.client.new_channel_for_task(task_id, participants)?;
 
         let result = EddsaSignComputation {
@@ -293,13 +309,20 @@ impl Orchestrator {
         .perform_leader_centric_computation(channel, Duration::from_secs(60))
         .await?;
 
-        let (signature, verifying_key) = result.ok_or_else(|| {
-            anyhow::anyhow!("No signature returned (not leader?)")
-        })?;
+        let (signature, verifying_key) =
+            result.ok_or_else(|| anyhow::anyhow!("No signature returned (not leader?)"))?;
 
         Ok(EddsaSignResult {
-            signature: hex::encode(signature.serialize().map_err(|e| anyhow::anyhow!("{}", e))?),
-            public_key: hex::encode(verifying_key.serialize().map_err(|e| anyhow::anyhow!("{}", e))?),
+            signature: hex::encode(
+                signature
+                    .serialize()
+                    .map_err(|e| anyhow::anyhow!("{}", e))?,
+            ),
+            public_key: hex::encode(
+                verifying_key
+                    .serialize()
+                    .map_err(|e| anyhow::anyhow!("{}", e))?,
+            ),
         })
     }
 

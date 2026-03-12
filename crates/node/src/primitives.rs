@@ -174,14 +174,30 @@ pub struct MpcPeerMessage {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, BorshSerialize, BorshDeserialize)]
 pub enum MpcTaskId {
-    EcdsaKeyGeneration { key_event: u64 },
-    EcdsaManyTriples { start: UniqueId, count: u32 },
-    EcdsaPresignature { id: UniqueId, domain_id: u64, paired_triple_id: UniqueId },
+    EcdsaKeyGeneration {
+        key_event: u64,
+    },
+    EcdsaManyTriples {
+        start: UniqueId,
+        count: u32,
+    },
+    EcdsaPresignature {
+        id: UniqueId,
+        domain_id: u64,
+        paired_triple_id: UniqueId,
+    },
     /// For ECDSA signing, `msg_hash` carries the 32-byte hash that all participants sign.
-    EcdsaSignature { msg_hash: [u8; 32], presignature_id: UniqueId },
-    EddsaKeyGeneration { key_event: u64 },
+    EcdsaSignature {
+        msg_hash: [u8; 32],
+        presignature_id: UniqueId,
+    },
+    EddsaKeyGeneration {
+        key_event: u64,
+    },
     /// For EdDSA signing, `payload` carries the full message that all participants sign.
-    EddsaSignature { payload: Vec<u8> },
+    EddsaSignature {
+        payload: Vec<u8>,
+    },
 }
 
 pub enum PeerMessage {

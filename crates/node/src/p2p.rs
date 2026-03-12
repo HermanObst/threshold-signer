@@ -48,11 +48,7 @@ impl MeshNetworkTransportSender for TlsMeshSender {
         connected.get(&participant_id).copied().unwrap_or(false)
     }
 
-    fn send(
-        &self,
-        recipient_id: ParticipantId,
-        message: MpcMessage,
-    ) -> anyhow::Result<()> {
+    fn send(&self, recipient_id: ParticipantId, message: MpcMessage) -> anyhow::Result<()> {
         let sender = self
             .outgoing
             .get(&recipient_id)
@@ -73,9 +69,7 @@ impl MeshNetworkTransportSender for TlsMeshSender {
                 let connected = self.connected.lock().unwrap();
                 peers_to_consider
                     .iter()
-                    .filter(|p| {
-                        **p == self.my_id || connected.get(p).copied().unwrap_or(false)
-                    })
+                    .filter(|p| **p == self.my_id || connected.get(p).copied().unwrap_or(false))
                     .count()
             };
             if connected_count >= threshold {
@@ -127,13 +121,9 @@ pub async fn new_tls_mesh_network(
     participants: &ParticipantsConfig,
     my_id: ParticipantId,
     listen_port: u16,
-) -> anyhow::Result<(
-    Arc<TlsMeshSender>,
-    TlsMeshReceiver,
-)> {
+) -> anyhow::Result<(Arc<TlsMeshSender>, TlsMeshReceiver)> {
     let (incoming_tx, incoming_rx) = mpsc::unbounded_channel();
-    let connected: Arc<Mutex<HashMap<ParticipantId, bool>>> =
-        Arc::new(Mutex::new(HashMap::new()));
+    let connected: Arc<Mutex<HashMap<ParticipantId, bool>>> = Arc::new(Mutex::new(HashMap::new()));
 
     let mut outgoing_senders: HashMap<ParticipantId, mpsc::UnboundedSender<MpcMessage>> =
         HashMap::new();
@@ -240,10 +230,7 @@ pub async fn new_tls_mesh_network(
                                 let peer_id = match participants_map.get(&peer_pk) {
                                     Some(id) => *id,
                                     None => {
-                                        tracing::warn!(
-                                            "Unknown peer public key from {}",
-                                            addr
-                                        );
+                                        tracing::warn!("Unknown peer public key from {}", addr);
                                         return;
                                     }
                                 };
@@ -257,25 +244,23 @@ pub async fn new_tls_mesh_network(
                                 let mut stream = tls_stream;
                                 loop {
                                     match read_message(&mut stream).await {
-                                        Ok(data) => {
-                                            match borsh::from_slice::<Packet>(&data) {
-                                                Ok(Packet::Mpc(message)) => {
-                                                    let _ = incoming_tx.send(MpcPeerMessage {
-                                                        from: peer_id,
-                                                        message,
-                                                    });
-                                                }
-                                                Ok(Packet::Ping) => {}
-                                                Err(e) => {
-                                                    tracing::warn!(
-                                                        "Failed to deserialize from {}: {}",
-                                                        peer_id,
-                                                        e
-                                                    );
-                                                    break;
-                                                }
+                                        Ok(data) => match borsh::from_slice::<Packet>(&data) {
+                                            Ok(Packet::Mpc(message)) => {
+                                                let _ = incoming_tx.send(MpcPeerMessage {
+                                                    from: peer_id,
+                                                    message,
+                                                });
                                             }
-                                        }
+                                            Ok(Packet::Ping) => {}
+                                            Err(e) => {
+                                                tracing::warn!(
+                                                    "Failed to deserialize from {}: {}",
+                                                    peer_id,
+                                                    e
+                                                );
+                                                break;
+                                            }
+                                        },
                                         Err(e) => {
                                             tracing::debug!(
                                                 "Read error from peer {}: {}",
@@ -312,7 +297,12 @@ pub async fn new_tls_mesh_network(
         connected,
     });
 
-    Ok((sender, TlsMeshReceiver { receiver: incoming_rx }))
+    Ok((
+        sender,
+        TlsMeshReceiver {
+            receiver: incoming_rx,
+        },
+    ))
 }
 
 async fn connect_to_peer(

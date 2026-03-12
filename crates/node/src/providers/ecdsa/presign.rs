@@ -3,11 +3,11 @@ use crate::network::NetworkTaskChannel;
 use crate::primitives::ParticipantId;
 use crate::protocol::run_protocol;
 use serde::{Deserialize, Serialize};
-use threshold_signatures::ecdsa::KeygenOutput;
 use threshold_signatures::ecdsa::ot_based_ecdsa::triples::TripleGenerationOutput;
 use threshold_signatures::ecdsa::ot_based_ecdsa::{
     presign::presign, PresignArguments, PresignOutput,
 };
+use threshold_signatures::ecdsa::KeygenOutput;
 use threshold_signatures::participants::Participant;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
